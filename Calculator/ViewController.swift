@@ -18,11 +18,16 @@ class ViewController: UIViewController {
     var operationTag: Int = 0
     
     @IBAction func clearPressed(_ sender: UIButton) {
-        label.text = ""
-        firstOperand = 0
-        numberIsTyping = 0
-        operationTag = 0
-        operationSign = false
+        if sender.tag == 17 {
+            label.text = ""
+            firstOperand = 0
+            numberIsTyping = 0
+            operationTag = 0
+            operationSign = false
+        }
+        else if sender.tag == 15 {
+            label.text!.removeLast()
+        }
     }
     
     @IBAction func equalsPressed(_ sender: UIButton) {
@@ -36,7 +41,12 @@ class ViewController: UIViewController {
             printResult(firstOperand * numberIsTyping)
         }
         else if operationTag == 14 {
-            printResult(firstOperand / numberIsTyping)
+            if numberIsTyping == 0 {
+                printResult(0)
+            }
+            else {
+                printResult(firstOperand / numberIsTyping)
+            }
         }
         firstOperand = 0
         numberIsTyping = 0
@@ -53,14 +63,18 @@ class ViewController: UIViewController {
     }
     
     @IBAction func numberPressed(_ sender: UIButton) {
+        var num = String(sender.tag)
+        if sender.tag == 16 {
+            num = "."
+        }
         if operationSign == true {
-            label.text = String(sender.tag)
+            label.text = num
             operationSign = false
         }
         else if operationSign == false && firstOperand != 0 {
-            label.text = label.text! + String(sender.tag)
+            label.text = label.text! + num
         } else {
-            label.text = String(sender.tag)
+            label.text = num
         }
         numberIsTyping = Double(label.text!)!
     }

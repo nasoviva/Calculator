@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Expression
 
 class ViewController: UIViewController {
     
@@ -16,52 +17,52 @@ class ViewController: UIViewController {
     var numberIsTyping: Double = 0
     var firstOperand: Double = 0
     var operationSign: Bool = false
+    var operationEquels: Bool = false
     var operationTag: Int = 0
     var result: String = ""
 
 
     @IBAction func clearPressed(_ sender: UIButton) {
-        if sender.tag == 17 {
+        if sender.tag == 15 {
             clearAll()
         }
-        else if sender.tag == 15 && label.text!.isEmpty == false {
-            label.text!.removeLast()
-        }
+//        else if sender.tag == 15 && label.text!.isEmpty == false {
+//            label.text!.removeLast()
+//        }
     }
 
-    func clear () {
+    func clearAll() {
         firstOperand = 0
         numberIsTyping = 0
         operationTag = 0
         operationSign = false
-       // result = ""
-    }
-
-    func clearAll() {
-        clear()
+        operationEquels = false
         label.text = "0"
+
     }
 
     @IBAction func equalsPressed(_ sender: UIButton) {
-      //  print(result)
-        if operationTag == 11 {
-            printResult(firstOperand + numberIsTyping)
+        operationEquels = true
+        if operationSign == true && (label.text == "0" || label.text == "0." || label.text == "" || label.text == "+" || label.text == "-" || label.text == "*" || label.text == "/") {
+            numberIsTyping = 0
+
         }
-        else if operationTag == 12 {
-            printResult(firstOperand - numberIsTyping)
+        result = result + " " + String(numberIsTyping)
+       //print("equalsPressed result= " + result)
+        let expressionString = result
+        let expression = Expression(expressionString)
+        var finalResult: Double = 0
+        do {
+            finalResult = try expression.evaluate()
+        } catch {
+            print("Failed to evaluate expression: \(error)")
         }
-        else if operationTag == 13 {
-            printResult(firstOperand * numberIsTyping)
-        }
-        else if operationTag == 14 {
-            if numberIsTyping == 0 {
-                printResult(0)
-            }
-            else {
-                printResult(firstOperand / numberIsTyping)
-            }
-        }
-        clear()
+        printResult(finalResult)
+        firstOperand = 0
+        numberIsTyping = 0
+        operationTag = 0
+        operationSign = false
+        result = ""
     }
     
     func printResult(_ number: Double) {
@@ -72,43 +73,50 @@ class ViewController: UIViewController {
                 label.text = String(number)
             }
         }
+
         else {
             label.text = "Err"
         }
     }
 
     @IBAction func numberPressed(_ sender: UIButton) {
-        if label.text!.count < 15 {
-            let num = checkDot(sender.tag)
-          //  result = result + num
-            if operationSign == true {
-                label.text = num
+        if label.text!.count > 15 {
+            label.text = "0"
+        }
+        if sender.tag == 16 && label.text!.contains(".") == false {
+            if (label.text != "" && label.text != "+" && label.text != "-" && label.text != "*" && label.text != "/") {
+                label.text = label.text! + "."
+            }
+        }
+        else if sender.tag >= 0 && sender.tag <= 9 {
+            if operationEquels == true || operationSign == true {
+                label.text = String(sender.tag)
                 operationSign = false
+                operationEquels = false
             }
             else if operationSign == false && label.text != "0" {
-                label.text = label.text! + num
+                label.text = label.text! + String(sender.tag)
             }
             else  if operationSign == false && label.text == "0" {
-                label.text = num
+                label.text = String(sender.tag)
             }
-            numberIsTyping = Double(label.text!)!
         }
-    }
-
-    func checkDot(_ tag: Int) -> String {
-        if (label.text == "0" || label.text == "" || label.text == "+" || label.text == "-" || label.text == "*" || label.text == "/") && tag == 16 {
-            return "0."
-        } else if label.text!.contains(".") == false && tag == 16 {
-           return "."
-        } else if tag == 16 {
-            return ""
-        }
-        return String(tag);
+        numberIsTyping = Double(label.text!) ?? 0
     }
 
     @IBAction func operationPressed(_ sender: UIButton) {
-        if operationSign != true && label.text != "-" {
-            firstOperand = Double(label.text!)!
+        if operationSign != true {//&& label.text != "-"
+            if label.text == "0" || label.text == "0." || label.text == "" || label.text == "+" || label.text == "-" || label.text == "*" || label.text == "/" {
+                firstOperand = 0
+            }
+            else {
+                firstOperand = Double(label.text!) ?? 0
+            }
+            if result == "" {
+                result = String(firstOperand)
+            } else {
+                result = result + " " + String(firstOperand)
+            }
             if sender.tag == 11 {
                 label.text = "+"
             }
@@ -121,9 +129,10 @@ class ViewController: UIViewController {
             else if sender.tag == 14 {
                 label.text = "/"
             }
-           // result = result + label.text!
             operationTag = sender.tag
+            result = result + " " + label.text!
             operationSign = true
+//           print("operationPressed result = " + result)
         }
      }
 }

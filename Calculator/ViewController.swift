@@ -103,7 +103,7 @@ class ViewController: UIViewController {
         if label.text!.count > 15 {
             label.text = "0"
         }
-        if sender.tag == 16 && label.text!.contains(".") == false {
+        if sender.tag == 16 && label.text!.contains(".") == false && label.text != "Err" {
             if (label.text != "" && label.text != "+" && label.text != "-" && label.text != "*" && label.text != "/") {
                 label.text = label.text! + "."
             }

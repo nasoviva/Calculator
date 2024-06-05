@@ -31,8 +31,54 @@ class ViewController: UIViewController {
             else if label.text!.count <= 1 {
                 label.text = "0"
             }
+            numberIsTyping = Double(label.text!) ?? 0
         }
     }
+
+    @IBAction func equalsPressed(_ sender: UIButton) {
+        if operationEquels == false {
+            operationEquels = true
+            if operationSign == true || (label.text == "0" || label.text == "0." || label.text == "" || label.text == "-"){
+                numberIsTyping = 0
+            }
+            result = result + " " + String(numberIsTyping)
+            getResult()
+            clear()
+        }
+    }
+
+    @IBAction func numberPressed(_ sender: UIButton) {
+
+        if label.text!.count > 15 {
+            label.text = "0"
+        }
+        if sender.tag == 18 {
+            plusMinusPressed()
+        }
+        if sender.tag == 16 {
+            dotPressed(sender.tag)
+        }
+        else if sender.tag >= 0 && sender.tag <= 9 {
+            digitPressed(sender.tag)
+        }
+        numberIsTyping = Double(label.text!) ?? 0
+    }
+
+    @IBAction func operationPressed(_ sender: UIButton) {
+        if operationSign != true && label.text != "-" {
+            if label.text == "0" || label.text == "0." || label.text == "" || label.text == "+" || label.text == "-" || label.text == "*" || label.text == "/" {
+                firstOperand = 0
+            }
+            else {
+                firstOperand = Double(label.text!) ?? 0
+            }
+            addResult(sender.tag)
+            operationSign = true
+        }
+     }
+}
+
+extension ViewController {
 
     func clear() {
         firstOperand = 0
@@ -47,23 +93,13 @@ class ViewController: UIViewController {
         label.text = "0"
     }
 
-    @IBAction func equalsPressed(_ sender: UIButton) {
-        operationEquels = true
-        if operationSign == true && (label.text == "0" || label.text == "0." || label.text == "" || label.text == "-"){
-            numberIsTyping = 0
-        }
-        result = result + " " + String(numberIsTyping)
-        getResult()
-        clear()
-    }
-
     func getResult() {
         let expressionString = result
         let expression = Expression(expressionString)
         var finalResult: Double = 0
         do {
             finalResult = try expression.evaluate()
-            if finalResult.isNormal {
+            if finalResult.isNormal || finalResult == 0 {
                 printResult(Decimal(finalResult))
             } else {
                 label.text = "Err"
@@ -99,58 +135,56 @@ class ViewController: UIViewController {
         }
     }
 
-    @IBAction func numberPressed(_ sender: UIButton) {
-        if label.text!.count > 15 {
-            label.text = "0"
+    func plusMinusPressed() {
+        let minus = Double(label.text!) ?? 0
+        if minus > 0 {
+            label.text = "-" + label.text!
         }
-        if sender.tag == 16 && label.text!.contains(".") == false && label.text != "Err" {
-            if (label.text != "" && label.text != "+" && label.text != "-" && label.text != "*" && label.text != "/") {
+        else if minus < 0 {
+            label.text = label.text!.replacingOccurrences(of: "-", with: "")
+        }
+    }
+
+    func dotPressed(_ tag: Int) {
+        if tag == 16 && label.text!.contains(".") == false && label.text != "Err" {
+            if (label.text != "" && label.text != "-" && operationSign == false && operationEquels == false) {
                 label.text = label.text! + "."
             }
         }
-        else if sender.tag >= 0 && sender.tag <= 9 {
-            if operationEquels == true || operationSign == true {
-                label.text = String(sender.tag)
-                operationSign = false
-                operationEquels = false
-            }
-            else if operationSign == false && label.text != "0" {
-                label.text = label.text! + String(sender.tag)
-            }
-            else if operationSign == false && label.text == "0" {
-                label.text = String(sender.tag)
-            }
-        }
-        numberIsTyping = Double(label.text!) ?? 0
     }
 
-    @IBAction func operationPressed(_ sender: UIButton) {
-        if operationSign != true && label.text != "-" {
-            if label.text == "0" || label.text == "0." || label.text == "" || label.text == "+" || label.text == "-" || label.text == "*" || label.text == "/" {
-                firstOperand = 0
-            }
-            else {
-                firstOperand = Double(label.text!) ?? 0
-            }
-            if result == "" {
-                result = String(firstOperand)
-            } else {
-                result = result + " " + String(firstOperand)
-            }
-            if sender.tag == 11 {
-                result = result + " " + "+"
-            }
-            else if sender.tag == 12 {
-                result = result + " " + "-"
-            }
-            else if sender.tag == 13 {
-                result = result + " " + "*"
-            }
-            else if sender.tag == 14 {
-                result = result + " " + "/"
-            }
-            operationSign = true
+    func digitPressed(_ tag: Int) {
+        if operationEquels == true || operationSign == true {
+            label.text = String(tag)
+            operationSign = false
+            operationEquels = false
         }
-     }
+        else if operationSign == false && label.text != "0" && label.text != "0." {
+            label.text = label.text! + String(tag)
+        }
+        else if operationSign == false && (label.text == "0" || label.text == "0.") {
+            label.text = String(tag)
+        }
+    }
+
+    func addResult(_ tag: Int) {
+        if result == "" {
+            result = String(firstOperand)
+        } else {
+            result = result + " " + String(firstOperand)
+        }
+        if tag == 11 {
+            result = result + " " + "+"
+        }
+        else if tag == 12 {
+            result = result + " " + "-"
+        }
+        else if tag == 13 {
+            result = result + " " + "*"
+        }
+        else if tag == 14 {
+            result = result + " " + "/"
+        }
+    }
 }
 
